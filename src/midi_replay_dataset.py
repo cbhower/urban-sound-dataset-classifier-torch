@@ -5,7 +5,7 @@ import pandas as pd
 import torchaudio
 
 
-class UrbanSoundDataset(Dataset):
+class MidiReplayDataset(Dataset):
 
     def __init__(self, annotations_file, audio_dir, transformation, target_sample_rate, num_samples, device):
         self.annotations = pd.read_csv(annotations_file)
@@ -69,8 +69,8 @@ class UrbanSoundDataset(Dataset):
 if __name__ == "__main__":
     ANNOTATIONS_FILE = r"C:\Users\Christian\Documents\cbhower\cbhower\urban-sound-dataset-classifier-torch\UrbanSound8K\metadata\UrbanSound8K.csv"
     AUDIO_DIR = r"C:\Users\Christian\Documents\cbhower\cbhower\urban-sound-dataset-classifier-torch\UrbanSound8K\audio"
-    SAMPLE_RATE = 16000
-    NUM_SAMPLES = 22050
+    SAMPLE_RATE = 22050
+    NUM_SAMPLES = 8820  # 4/10 of a second
 
     if torch.cuda.is_available():
         device = "cuda"
@@ -82,9 +82,9 @@ if __name__ == "__main__":
         sample_rate=SAMPLE_RATE,
         n_fft=1024,
         hop_length=512,
-        n_mels=64
+        n_mels=128
     )
 
-    usd = UrbanSoundDataset(ANNOTATIONS_FILE, AUDIO_DIR, mel_spectrogram, SAMPLE_RATE, NUM_SAMPLES, device)
+    usd = MidiReplayDataset(ANNOTATIONS_FILE, AUDIO_DIR, mel_spectrogram, SAMPLE_RATE, NUM_SAMPLES, device)
     print(f"There are {len(usd)} samples in the dataset.")
     signal, label = usd[0]
