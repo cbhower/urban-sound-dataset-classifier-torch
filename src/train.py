@@ -83,7 +83,7 @@ if __name__ == "__main__":
                             device)
 
     train_dataloader = create_data_loader(mrd, BATCH_SIZE)
-
+    test_dataloader = create_data_loader(mrd, BATCH_SIZE)
     # construct model and assign it to device
     cnn = ConvNet().to(device)
     print(cnn)
@@ -95,6 +95,7 @@ if __name__ == "__main__":
 
     # train model
     train(cnn, train_dataloader, loss_fn, optimiser, device, EPOCHS)
+    test(cnn, train_dataloader, loss_fn)
 
     # save model
     torch.save(cnn.state_dict(), "feedforwardnet.pth")
