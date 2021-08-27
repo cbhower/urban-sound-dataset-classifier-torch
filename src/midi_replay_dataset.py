@@ -21,12 +21,12 @@ class MidiReplayDataset(Dataset):
     def __getitem__(self, index):
         audio_sample_path = self._get_audio_sample_path(index)
         label = self._get_audio_sample_label(index)
-        signal, sr = torchaudio.load(audio_sample_path)
+        signal, sample_rate = torchaudio.load(audio_sample_path)
         signal = signal.to(self.device)
-        signal = self._resample_if_necessary(signal, sr)
-        signal = self._mix_down_if_necessary(signal)
-        signal = self._cut_if_necessary(signal)
-        signal = self._right_pad_if_necessary(signal)
+        signal = self._resample(signal, sample_rate)
+        signal = self._mix_to_mono(signal)
+        signal = self._trim(signal)
+        signal = self._right_pad(signal)
         signal = self.transformation(signal)
 
         return signal, label
@@ -40,24 +40,25 @@ class MidiReplayDataset(Dataset):
     def _get_audio_sample_label(self, index):
         return self.annotations.iloc[index, 6]
 
-    def _resample_if_necessary(self, signal, sr):
+    def _resample(self, signal, sr):
         if sr != self.target_sample_rate:
             resampler = torchaudio.transforms.Resample(sr, self.target_sample_rate).to(self.device)
             signal = resampler(signal)
 
         return signal
 
-    def _mix_down_if_necessary(self, signal):
+    @staticmethod
+    def _mix_to_mono(signal):
         if signal.shape[0] > 1:
             signal = torch.mean(signal, dim=0, keepdim=True)
         return signal
 
-    def _cut_if_necessary(self, signal):
+    def _trim(self, signal):
         if signal.shape[1] > self.num_samples:
             signal = signal[:, :self.num_samples]
         return signal
 
-    def _right_pad_if_necessary(self, signal):
+    def _right_pad(self, signal):
         length_signal = signal.shape[1]
         if length_signal < self.num_samples:
             num_missing_samples = self.num_samples - length_signal
