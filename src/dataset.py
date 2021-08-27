@@ -69,6 +69,12 @@ if __name__ == "__main__":
     SAMPLE_RATE = 16000
     NUM_SAMPLES = 22050
 
+    if torch.cuda.is_available():
+        device = "cuda"
+    else:
+        device = "cpu"
+    print(f"Using device {device}")
+
     mel_spectrogram = torchaudio.transforms.MelSpectrogram(
         sample_rate=SAMPLE_RATE,
         n_fft=1024,
